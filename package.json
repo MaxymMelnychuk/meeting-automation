@@ -1,0 +1,17 @@
+{
+  "name": "meeting-automation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"pnpm --dir apps/web dev\" \"python -m uvicorn apps.api.main:app --reload --port 8000\""
+
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.14.0",
+  "devDependencies": {
+    "concurrently": "^10.0.5"
+  }
+}
