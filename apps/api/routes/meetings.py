@@ -1,5 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
+
 from apps.api.services.transcription import transcribe_audio
+from apps.api.services.analysis import analyze_meeting
+
 
 router = APIRouter()
 
@@ -12,8 +15,10 @@ async def upload_meeting(file: UploadFile = File(...)):
         buffer.write(await file.read())
 
     text = transcribe_audio(file_path)
+    analysis = analyze_meeting(text)
 
     return {
         "filename": file.filename,
-        "text": text,
+        "transcript": text,
+        "analysis": analysis.model_dump(),
     }
