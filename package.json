@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "concurrently \"pnpm --dir apps/web dev\" \"python -m uvicorn apps.api.main:app --reload --port 8000\""
+    "dev": "concurrently \"pnpm --dir apps/web dev\" \"apps\\\\api\\\\.venv\\\\Scripts\\\\python.exe -m uvicorn apps.api.main:app --reload --port 8000\""
 
   },
   "keywords": [],
