@@ -1,0 +1,11 @@
+Hello everyone. The main topic today is the launch of the new website.
+
+After discussing the different options, we decided to launch the website on September 15.
+
+Sarah will prepare the final homepage content by September 10.
+
+Thomas will handle the production deployment.
+
+We also discussed the mobile version, but no decision has been made yet.
+
+There is still a problem with the payment integration. The team is waiting for the provider to confirm the API credentials.
