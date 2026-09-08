@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -7,6 +9,7 @@ class Participant(BaseModel):
     name: str
     role: str | None
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class Topic(BaseModel):
@@ -15,6 +18,7 @@ class Topic(BaseModel):
     title: str
     summary: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class DiscussionPoint(BaseModel):
@@ -23,6 +27,7 @@ class DiscussionPoint(BaseModel):
     topic: str
     summary: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class Decision(BaseModel):
@@ -30,6 +35,7 @@ class Decision(BaseModel):
 
     description: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class Action(BaseModel):
@@ -39,6 +45,7 @@ class Action(BaseModel):
     assignee: str | None
     deadline: str | None
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class Problem(BaseModel):
@@ -46,6 +53,7 @@ class Problem(BaseModel):
 
     description: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class OpenQuestion(BaseModel):
@@ -53,6 +61,7 @@ class OpenQuestion(BaseModel):
 
     question: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class ImportantInformation(BaseModel):
@@ -60,6 +69,7 @@ class ImportantInformation(BaseModel):
 
     content: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class TimelineEvent(BaseModel):
@@ -68,6 +78,7 @@ class TimelineEvent(BaseModel):
     date_or_reference: str
     event: str
     evidence: str
+    certainty: Literal["explicit", "inferred"]
 
 
 class MeetingAnalysis(BaseModel):
