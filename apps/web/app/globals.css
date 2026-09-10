@@ -1,26 +1,298 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--text-1);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ─── Design Tokens ──────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --bg:            #000000;
+  --surface:       #161616;
+  --surface-2:     #1c1c1c;
+
+  /* Borders */
+  --border:        #272727;
+  --border-subtle: #1e1e1e;
+
+  /*
+    Text — 5 levels.
+    READABILITY IS THE #1 PRIORITY.
+    Every level is high enough contrast to be read without strain.
+
+    text-1 — headlines, file names        #f2f2f2 → ~17:1
+    text-2 — primary AI content           #e2e2e2 → ~14:1
+    text-3 — supporting content           #b8b8b8 → ~9:1
+    text-4 — metadata, labels             #888888 → ~5.5:1
+    text-5 — ghost / decorative only      #555555 → ~3:1
+              (never use for readable text)
+  */
+  --text-1: #f2f2f2;
+  --text-2: #e2e2e2;
+  --text-3: #b8b8b8;
+  --text-4: #888888;
+  --text-5: #555555;
+
+  --badge-bg:   #1e1e1e;
+  --badge-text: #888888;
+  --error:      #e07070;
+
+  /* Easing */
+  --ease-out:  cubic-bezier(0.25, 0, 0, 1);
+  --ease-snap: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Reset ──────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text-2);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100svh;
+}
+
+/* ─── Content layout ─────────────────────────────────────── */
+.content-column {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 28px 140px;
+}
+
+@media (min-width: 1100px) {
+  .content-column {
+    margin-left: clamp(72px, 10vw, 160px);
+    margin-right: auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
+/* ─── Keyframes ──────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes ringExpand {
+  0%   { transform: scale(1);   opacity: 0.5; }
+  70%  { transform: scale(3.2); opacity: 0;   }
+  100% { transform: scale(3.2); opacity: 0;   }
+}
+
+/* ─── Animations ─────────────────────────────────────────── */
+.anim-fade-in  { animation: fadeIn  0.45s ease-out both; }
+.anim-rise-in  { animation: riseIn  0.55s var(--ease-out) both; }
+
+/* ─── Upload zone ────────────────────────────────────────── */
+.upload-zone {
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  padding: 64px 48px;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.upload-zone:hover {
+  border-color: #363636;
+  background-color: rgba(255, 255, 255, 0.015);
+}
+
+.upload-zone.dragging {
+  border-color: #4a4a4a;
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+@media (max-width: 520px) {
+  .upload-zone { padding: 48px 24px; }
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-1);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  padding: 12px 26px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  line-height: 1;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.btn-primary:hover:not(:disabled) { opacity: 0.84; }
+.btn-primary:active:not(:disabled) { opacity: 0.70; transform: scale(0.97); }
+
+.btn-primary:disabled {
+  background: var(--surface-2);
+  color: var(--text-5);
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--text-4);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+  transition: color 0.15s ease;
+}
+
+.btn-ghost:hover { color: var(--text-3); }
+
+/* ─── Section label ──────────────────────────────────────── */
+/* Used as a quiet navigational marker, not body text.
+   11px is acceptable ONLY because of uppercase + tracking. */
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-4);
+  margin: 0;
+  line-height: 1;
+}
+
+/* ─── Processing ring ────────────────────────────────────── */
+.pulse-ring {
+  position: relative;
+  width: 14px;
+  height: 14px;
+}
+
+.pulse-ring__core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.pulse-ring__wave {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: ringExpand 3.5s ease-out infinite;
+}
+
+.pulse-ring__wave--2 { animation-delay: 1.75s; }
+
+/* ─── Inferred badge ─────────────────────────────────────── */
+.badge-inferred {
+  display: inline-flex;
+  align-items: center;
+  background: var(--badge-bg);
+  color: var(--badge-text);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 100px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ─── Action card ────────────────────────────────────────── */
+.action-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+  transition: border-color 0.2s ease;
+}
+
+.action-card:hover { border-color: #333333; }
+
+.action-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 16px;
+  margin-top: 16px;
+}
+
+@media (max-width: 520px) {
+  .action-meta { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* ─── Topic card ─────────────────────────────────────────── */
+.topic-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  transition: border-color 0.2s ease;
+}
+
+.topic-card:hover { border-color: #333333; }
+
+/* ─── Divider rows ───────────────────────────────────────── */
+.divider-row {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 20px 0;
+}
+
+.divider-row:first-child { border-top: 1px solid var(--border-subtle); }
+
+/* ─── Transcript ─────────────────────────────────────────── */
+/* text-4 (#888) — readable, clearly secondary */
+.transcript-body {
+  color: var(--text-4);
+  font-size: 14px;
+  line-height: 1.9;
+  font-family: var(--font-geist-mono), monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  max-height: 540px;
+}
+
+/* ─── Layout utilities ───────────────────────────────────── */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.timeline-row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px 0;
+}
+
+@media (max-width: 520px) {
+  .timeline-row { grid-template-columns: 1fr; gap: 4px; }
+  .content-column { padding-top: 56px; padding-bottom: 100px; }
 }
