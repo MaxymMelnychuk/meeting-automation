@@ -1,20 +1,30 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, Instrument_Serif, Geist_Mono } from "next/font/google"
 import "./globals.css"
+import { Providers } from "./providers"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600"],
+})
+
+const instrument = Instrument_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
 })
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
 })
 
 export const metadata: Metadata = {
-  title: "Meeting Intelligence",
-  description: "AI-powered meeting analysis and action extraction",
+  title: "Meeting Intelligence — Turn meetings into actionable work",
+  description:
+    "AI-powered meeting analysis. Transcription, insights, decisions, and action items extracted automatically.",
 }
 
 export default function RootLayout({
@@ -25,9 +35,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      className={`${inter.variable} ${instrument.variable} ${geistMono.variable} antialiased`}
     >
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }
