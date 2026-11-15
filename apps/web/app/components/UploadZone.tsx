@@ -1,6 +1,8 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import Link from "next/link"
 
 interface UploadZoneProps {
   file: File | null
@@ -9,153 +11,119 @@ interface UploadZoneProps {
   onUpload: () => void
 }
 
-export function UploadZone({
-  file,
-  error,
-  onFileChange,
-  onUpload,
-}: UploadZoneProps) {
-  const [isDragging, setIsDragging] = useState(false)
+export function UploadZone({ file, error, onFileChange, onUpload }: UploadZoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [dragging, setDragging] = useState(false)
 
-  function handleDragOver(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  function handleDragLeave(e: React.DragEvent) {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setIsDragging(false)
-    }
-  }
-
-  function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    const dropped = e.dataTransfer.files[0]
-    if (dropped) onFileChange(dropped)
+  function fmt(b: number) {
+    return b < 1024 * 1024 ? `${(b / 1024).toFixed(0)} KB` : `${(b / 1024 / 1024).toFixed(1)} MB`
   }
 
   return (
-    <div className="anim-rise-in">
-      {/* Drop zone */}
-      <div
-        className={`upload-zone${isDragging ? " dragging" : ""}`}
-        onClick={() => inputRef.current?.click()}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        role="button"
-        tabIndex={0}
-        aria-label="Upload meeting recording"
-        onKeyDown={(e) => e.key === "Enter" && inputRef.current?.click()}
-      >
-        {/* Upload icon */}
-        <div
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 11,
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 24px",
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
-            <path
-              d="M9 13V2M9 2L5.5 5.5M9 2L12.5 5.5"
-              stroke="var(--text-5)"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M2 15.5h14"
-              stroke="var(--text-5)"
-              strokeWidth="1.4"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-
-        {file ? (
-          <p
-            style={{
-              color: "var(--text-2)",
-              fontSize: 14,
-              fontWeight: 500,
-              letterSpacing: "-0.01em",
-              margin: 0,
-            }}
-          >
-            {file.name}
-          </p>
-        ) : (
-          <>
-            <p style={{ color: "var(--text-4)", fontSize: 14, margin: 0 }}>
-              {isDragging ? "Release to upload" : "Drop your meeting recording here"}
-            </p>
-            <p
-              style={{
-                color: "var(--text-5)",
-                fontSize: 12,
-                marginTop: 6,
-                marginBottom: 0,
-              }}
-            >
-              or click to browse
-            </p>
-          </>
-        )}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="audio/*"
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const f = e.target.files?.[0]
-            if (f) onFileChange(f)
-          }}
-        />
-      </div>
-
-      {error && (
-        <p
-          className="anim-fade-in"
-          style={{ color: "var(--error)", fontSize: 13, marginTop: 16 }}
-        >
-          {error}
-        </p>
-      )}
-
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 20,
-          marginTop: 24,
+    <div
+      className={dragging ? "[&_button]:-translate-y-px" : ""}
+      onDragOver={(e) => {
+        e.preventDefault()
+        setDragging(true)
+      }}
+      onDragLeave={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragging(false)
+      }}
+      onDrop={(e) => {
+        e.preventDefault()
+        setDragging(false)
+        const f = e.dataTransfer.files[0]
+        if (f) onFileChange(f)
+      }}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="audio/*,video/mp4,video/webm"
+        hidden
+        onChange={(e) => {
+          const f = e.target.files?.[0]
+          if (f) onFileChange(f)
         }}
-      >
-        <button className="btn-primary" onClick={onUpload} disabled={!file}>
-          Analyze
-        </button>
+      />
 
-        {file && (
-          <button
-            className="btn-ghost anim-fade-in"
-            onClick={(e) => {
-              e.stopPropagation()
-              onFileChange(null)
-            }}
+      <AnimatePresence mode="wait">
+        {file ? (
+          <motion.div
+            key="ready"
+            className="flex flex-wrap items-center justify-center gap-2.5"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
-            Clear
-          </button>
+            <div className="flex h-11 min-w-0 items-center gap-2.5 rounded border border-line-2 bg-white/[0.03] py-0 pr-2 pl-3.5">
+              <span className="max-w-[180px] truncate text-[13px] text-fg">{file.name}</span>
+              <span className="text-[11px] text-fg-4">{fmt(file.size)}</span>
+              <button
+                type="button"
+                aria-label="Remove file"
+                onClick={() => onFileChange(null)}
+                className="size-6 cursor-pointer text-base leading-none text-fg-4 transition-colors hover:text-fg"
+              >
+                ×
+              </button>
+            </div>
+            <button
+              type="button"
+              className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-sm bg-white px-[18px] text-[13px] font-medium text-black transition-colors hover:bg-white/88 active:scale-[0.97]"
+              onClick={onUpload}
+            >
+              Analyze meeting
+            </button>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="empty"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-col items-start"
+          >
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <button
+                type="button"
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-sm bg-white px-[18px] text-[13px] font-medium text-black transition-colors hover:bg-white/88 active:scale-[0.97]"
+                onClick={() => inputRef.current?.click()}
+              >
+                Upload recording
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
+                  <path d="M6 8.5V1.5M6 1.5L3.5 4M6 1.5L8.5 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M1.5 10.5h9" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                </svg>
+              </button>
+              <Link
+                href="/workspace"
+                className="inline-flex h-11 cursor-pointer items-center rounded-sm border border-line-2 px-4 text-xs text-fg-3 no-underline transition-colors hover:border-line-strong hover:text-fg"
+              >
+                Open workspace
+              </Link>
+            </div>
+            <p className="mt-2.5 text-center text-[11px] tracking-wide text-fg-4">
+              Or drop a file anywhere on this page · MP3 MP4 WAV
+            </p>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {error && (
+          <motion.p
+            className="mt-2.5 text-center text-xs text-fg-3"
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            {error}
+          </motion.p>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -1,115 +1,119 @@
 "use client"
 
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronDown, CheckSquare, Lightbulb, Scale, ListChecks, Users, AlertTriangle, HelpCircle, Clock, FileText } from "lucide-react"
 import type { Action, UploadMeetingResponse } from "@/types/meeting"
 
-/* ─── Internal primitives ────────────────────────────────── */
+/* ─── Internal primitives ─────────────────────────────── */
 
-function Label({ children }: { children: React.ReactNode }) {
-  return <p className="label">{children}</p>
-}
-
-function InferredBadge({ certainty }: { certainty: "explicit" | "inferred" }) {
-  if (certainty === "explicit") return null
-  return <span className="badge-inferred">Inferred</span>
-}
-
-/* Sub-section label — for supporting data. Same readable treatment as Label */
-function SubLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p
-      style={{
-        fontSize: 11,
-        fontWeight: 600,
-        letterSpacing: "0.12em",
-        textTransform: "uppercase",
-        color: "var(--text-4)",  /* #888 — readable */
-        margin: "0 0 16px",
-        lineHeight: 1,
-      }}
-    >
+    <p className="label" style={{ color: "var(--text-4)", marginBottom: 16 }}>
       {children}
     </p>
   )
 }
 
-/* ─── Action Card ──────────────────────────────────────────── */
+function InferredBadge({ certainty }: { certainty: "explicit" | "inferred" }) {
+  if (certainty === "explicit") return null
+  return (
+    <span className="badge badge-inferred" style={{ fontSize: 9 }}>Inferred</span>
+  )
+}
+
+/* ─── Action Card ─────────────────────────────────────── */
 
 function ActionCard({ action, index }: { action: Action; index: number }) {
   return (
-    <div className="action-card">
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+    <motion.div
+      className="action-card"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="flex gap-4 items-start">
         {/* Index */}
         <span
+          className="flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold tabular-nums"
           style={{
+            background: "var(--surface-2)",
+            border: "1px solid var(--border)",
             color: "var(--text-4)",
-            fontSize: 12,
-            fontWeight: 600,
-            letterSpacing: "0.06em",
-            paddingTop: 2,
-            minWidth: 22,
-            flexShrink: 0,
-            fontVariantNumeric: "tabular-nums",
+            fontSize: 10,
           }}
         >
           {String(index + 1).padStart(2, "0")}
         </span>
 
         {/* Content */}
-        <div style={{ flex: 1 }}>
-          <p
-            style={{
-              color: "var(--text-2)",
-              fontSize: 15,
-              lineHeight: 1.78,
-              fontWeight: 400,
-              margin: 0,
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)", fontWeight: 400 }}>
             {action.description}
           </p>
           {action.certainty === "inferred" && (
-            <div style={{ marginTop: 12 }}>
+            <div className="mt-2">
               <InferredBadge certainty={action.certainty} />
             </div>
           )}
         </div>
       </div>
 
-      {/* Assignee + deadline */}
+      {/* Metadata */}
       <div className="action-meta">
         <div>
-          <p className="label" style={{ marginBottom: 8 }}>Assignee</p>
-          <p
-            style={{
-              color: action.assignee ? "var(--text-3)" : "var(--text-4)",
-              fontSize: 14,
-              margin: 0,
-              fontStyle: action.assignee ? "normal" : "italic",
-            }}
-          >
+          <p className="label" style={{ marginBottom: 6 }}>Assignee</p>
+          <p className="text-sm" style={{
+            color: action.assignee ? "var(--text-2)" : "var(--text-4)",
+            fontStyle: action.assignee ? "normal" : "italic",
+          }}>
             {action.assignee ?? "Unassigned"}
           </p>
         </div>
         <div>
-          <p className="label" style={{ marginBottom: 8 }}>Deadline</p>
-          <p
-            style={{
-              color: action.deadline ? "var(--text-3)" : "var(--text-4)",
-              fontSize: 14,
-              margin: 0,
-              fontStyle: action.deadline ? "normal" : "italic",
-            }}
-          >
+          <p className="label" style={{ marginBottom: 6 }}>Deadline</p>
+          <p className="text-sm" style={{
+            color: action.deadline ? "var(--text-2)" : "var(--text-4)",
+            fontStyle: action.deadline ? "normal" : "italic",
+          }}>
             {action.deadline ?? "No deadline"}
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
-/* ─── Transcript section ─────────────────────────────────── */
+/* ─── Section ─────────────────────────────────────────── */
+
+interface SectionProps {
+  icon: React.ReactNode
+  label: string
+  count?: number
+  delay?: number
+  children: React.ReactNode
+}
+
+function Section({ icon, label, count, delay = 0, children }: SectionProps) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <span style={{ color: "var(--text-4)" }}>{icon}</span>
+        <SectionLabel>{label}</SectionLabel>
+        {count !== undefined && count > 0 && (
+          <span className="ml-auto text-xs tabular-nums" style={{ color: "var(--text-5)" }}>{count}</span>
+        )}
+      </div>
+      {children}
+    </motion.section>
+  )
+}
+
+/* ─── Transcript section ──────────────────────────────── */
 
 function TranscriptSection({ transcript }: { transcript: string }) {
   const [open, setOpen] = useState(false)
@@ -117,86 +121,64 @@ function TranscriptSection({ transcript }: { transcript: string }) {
   return (
     <div>
       <button
-        className="btn-ghost"
+        className="flex items-center gap-2 group"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <span className="label" style={{ color: "inherit" }}>Transcript</span>
-        <svg
-          width="10"
-          height="10"
-          viewBox="0 0 10 10"
-          fill="none"
-          aria-hidden="true"
+        <span style={{ color: "var(--text-4)" }}>
+          <FileText size={14} />
+        </span>
+        <span className="label" style={{ color: "var(--text-4)" }}>Transcript</span>
+        <ChevronDown
+          size={14}
           style={{
+            color: "var(--text-4)",
             transform: open ? "rotate(180deg)" : "rotate(0deg)",
-            transition: "transform 0.3s var(--ease-snap)",
+            transition: "transform 0.3s ease",
           }}
-        >
-          <path
-            d="M1.5 3.5L5 7L8.5 3.5"
-            stroke="currentColor"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        />
       </button>
 
-      <div
-        style={{
-          maxHeight: open ? 580 : 0,
-          overflow: "hidden",
-          transition: "max-height 0.45s var(--ease-snap)",
-        }}
-      >
-        <div
-          style={{
-            marginTop: 20,
-            padding: "22px 26px",
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: 12,
-            opacity: open ? 1 : 0,
-            transition: "opacity 0.3s ease 0.08s",
-          }}
-        >
-          <p className="transcript-body">{transcript}</p>
-        </div>
-      </div>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            style={{ overflow: "hidden" }}
+          >
+            <div
+              className="mt-4 rounded-xl p-5"
+              style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)",
+              }}
+            >
+              <p className="transcript-body">{transcript}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
 
-/* ─── Main component ─────────────────────────────────────── */
-
-/*
-  Text hierarchy — readability first, always:
-
-  Summary:    19px / text-2 (#e2e2e2) / lh 1.95  → very comfortable
-  Insights:   17px / text-2           / lh 1.82   → clearly readable
-  Decisions:  17px / text-2           / lh 1.82   → clearly readable
-  Actions:    15px / text-2           / lh 1.78   → comfortable
-  Metadata:   14px / text-3 (#b8b8b8) / lh 1.6   → readable
-  Sub-labels: 11px / text-4 (#888)    / uppercase+tracked → legible
-  Transcript: 14px / text-4 (#888)    / mono       → readable
-
-  Minimum for any meaningful sentence: 14px / text-3 (#b8b8b8)
-*/
+/* ─── Main component ──────────────────────────────────── */
 
 export function MeetingResults({ result }: { result: UploadMeetingResponse }) {
   const { analysis, transcript, filename } = result
 
   const has = {
-    importantInfo: analysis.important_information.length > 0,
-    decisions:     analysis.decisions.length > 0,
-    actions:       analysis.actions.length > 0,
-    participants:  analysis.participants.length > 0,
-    problems:      analysis.problems.length > 0,
-    openQuestions: analysis.open_questions.length > 0,
-    timeline:      analysis.timeline.length > 0,
-    topics:        analysis.topics.length > 0,
-    transcript:    !!transcript?.trim(),
+    importantInfo:  analysis.important_information.length > 0,
+    decisions:      analysis.decisions.length > 0,
+    actions:        analysis.actions.length > 0,
+    participants:   analysis.participants.length > 0,
+    problems:       analysis.problems.length > 0,
+    openQuestions:  analysis.open_questions.length > 0,
+    timeline:       analysis.timeline.length > 0,
+    topics:         analysis.topics.length > 0,
+    transcript:     !!transcript?.trim(),
   }
 
   const hasSupportingData =
@@ -204,399 +186,215 @@ export function MeetingResults({ result }: { result: UploadMeetingResponse }) {
     has.openQuestions || has.timeline
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 68 }}>
+    <div className="flex flex-col gap-14">
 
-      {/* ── Filename ──────────────────────────────────────── */}
-      <div className="anim-rise-in" style={{ animationDelay: "0ms" }}>
-        <p
-          style={{
-            color: "var(--text-1)",
-            fontSize: 16,
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
-            margin: 0,
-            lineHeight: 1.3,
-          }}
-        >
-          {filename}
+      {/* ── File header ──── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center gap-3"
+      >
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{ background: "var(--surface-2)", border: "1px solid var(--border-2)" }}>
+          <FileText size={14} color="var(--text-3)" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold tracking-tight" style={{ color: "var(--text-1)" }}>
+            {filename}
+          </p>
           {analysis.language && (
-            <span
-              style={{
-                color: "var(--text-4)",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                marginLeft: 14,
-                verticalAlign: "middle",
-              }}
-            >
-              {analysis.language}
-            </span>
+            <p className="text-xs mt-0.5" style={{ color: "var(--text-4)" }}>
+              Language: {analysis.language}
+            </p>
           )}
-        </p>
-      </div>
+        </div>
+      </motion.div>
 
-      {/* ── Summary ───────────────────────────────────────── */}
-      <div className="anim-rise-in" style={{ animationDelay: "80ms" }}>
-        <Label>Summary</Label>
-        <p
-          style={{
-            color: "var(--text-2)",
-            fontSize: 19,
-            lineHeight: 1.95,
-            fontWeight: 400,
-            marginTop: 18,
-            marginBottom: 0,
-          }}
-        >
+      {/* ── Summary ──── */}
+      <Section icon={<Lightbulb size={14} />} label="Summary" delay={0.05}>
+        <p className="text-base leading-[1.85]" style={{ color: "var(--text-2)", fontWeight: 400 }}>
           {analysis.summary}
         </p>
-      </div>
+      </Section>
 
-      {/* ── Insights ──────────────────────────────────────── */}
+      {/* ── Insights ──── */}
       {has.importantInfo && (
-        <div className="anim-rise-in" style={{ animationDelay: "160ms" }}>
-          <Label>Insights</Label>
-          <div style={{ marginTop: 18 }}>
+        <Section icon={<Lightbulb size={14} />} label="Insights" count={analysis.important_information.length} delay={0.1}>
+          <div>
             {analysis.important_information.map((info, i) => (
               <div key={i} className="divider-row">
-                <p
-                  style={{
-                    color: "var(--text-2)",
-                    fontSize: 17,
-                    lineHeight: 1.82,
-                    margin: 0,
-                    fontWeight: 400,
-                  }}
-                >
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)", fontWeight: 400 }}>
                   {info.content}
                 </p>
                 {info.certainty === "inferred" && (
-                  <div style={{ marginTop: 10 }}>
-                    <InferredBadge certainty={info.certainty} />
-                  </div>
+                  <div className="mt-2"><InferredBadge certainty={info.certainty} /></div>
                 )}
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* ── Decisions ─────────────────────────────────────── */}
+      {/* ── Decisions ──── */}
       {has.decisions && (
-        <div className="anim-rise-in" style={{ animationDelay: "240ms" }}>
-          <Label>Decisions</Label>
-          <div style={{ marginTop: 18 }}>
+        <Section icon={<Scale size={14} />} label="Decisions" count={analysis.decisions.length} delay={0.15}>
+          <div>
             {analysis.decisions.map((decision, i) => (
-              <div
-                key={i}
-                className="divider-row"
-                style={{ display: "flex", gap: 20, alignItems: "flex-start" }}
-              >
+              <div key={i} className="divider-row flex gap-5 items-start">
                 <span
-                  style={{
-                    color: "var(--text-4)",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    letterSpacing: "0.06em",
-                    paddingTop: 3,
-                    minWidth: 22,
-                    flexShrink: 0,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
+                  className="flex-shrink-0 tabular-nums text-xs"
+                  style={{ color: "var(--text-5)", paddingTop: 3, minWidth: 18 }}
                 >
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div style={{ flex: 1 }}>
-                  <p
-                    style={{
-                      color: "var(--text-2)",
-                      fontSize: 17,
-                      lineHeight: 1.82,
-                      fontWeight: 400,
-                      margin: 0,
-                    }}
-                  >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-2)", fontWeight: 400 }}>
                     {decision.description}
                   </p>
                   {decision.certainty === "inferred" && (
-                    <div style={{ marginTop: 10 }}>
-                      <InferredBadge certainty={decision.certainty} />
-                    </div>
+                    <div className="mt-2"><InferredBadge certainty={decision.certainty} /></div>
                   )}
                 </div>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* ── Actions ───────────────────────────────────────── */}
+      {/* ── Actions ──── */}
       {has.actions && (
-        <div className="anim-rise-in" style={{ animationDelay: "320ms" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <Label>Actions</Label>
-            <span
-              style={{
-                color: "var(--text-4)",
-                fontSize: 11,
-                fontWeight: 600,
-                letterSpacing: "0.1em",
-              }}
-            >
-              {analysis.actions.length}
-            </span>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <Section icon={<ListChecks size={14} />} label="Action items" count={analysis.actions.length} delay={0.2}>
+          <div className="flex flex-col gap-3">
             {analysis.actions.map((action, i) => (
               <ActionCard key={i} action={action} index={i} />
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* ── Supporting data ───────────────────────────────── */}
+      {/* ── Supporting data ──── */}
       {hasSupportingData && (
-        <div className="anim-rise-in" style={{ animationDelay: "400ms" }}>
-          <div
-            style={{
-              borderTop: "1px solid var(--border)",
-              paddingTop: 48,
-              display: "flex",
-              flexDirection: "column",
-              gap: 40,
-            }}
-          >
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="flex flex-col gap-10 pt-8"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
+          {/* Topics */}
+          {has.topics && (
+            <section>
+              <SectionLabel>Topics covered</SectionLabel>
+              <div className="topics-grid">
+                {analysis.topics.map((topic, i) => (
+                  <div key={i} className="topic-card">
+                    <p className="text-sm font-medium" style={{ color: "var(--text-2)", marginBottom: 5 }}>
+                      {topic.title}
+                    </p>
+                    <p className="text-xs leading-relaxed" style={{ color: "var(--text-4)" }}>
+                      {topic.summary}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
-            {/* Topics */}
-            {has.topics && (
-              <section>
-                <SubLabel>Topics</SubLabel>
-                <div className="topics-grid">
-                  {analysis.topics.map((topic, i) => (
-                    <div key={i} className="topic-card">
-                      <p
-                        style={{
-                          color: "var(--text-3)",
-                          fontSize: 14,
-                          fontWeight: 500,
-                          margin: "0 0 6px",
-                          lineHeight: 1.4,
-                        }}
-                      >
-                        {topic.title}
-                      </p>
-                      <p
-                        style={{
-                          color: "var(--text-4)",
-                          fontSize: 13,
-                          lineHeight: 1.65,
-                          margin: 0,
-                        }}
-                      >
-                        {topic.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* Participants */}
-            {has.participants && (
-              <section>
-                <SubLabel>Participants</SubLabel>
+          {/* Participants */}
+          {has.participants && (
+            <section>
+              <SectionLabel>Participants</SectionLabel>
+              <div>
                 {analysis.participants.map((p, i) => (
                   <div
                     key={i}
+                    className="flex items-center gap-3 py-3"
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      borderTop: i === 0 ? "1px solid var(--border-subtle)" : "none",
-                      borderBottom: "1px solid var(--border-subtle)",
-                      padding: "12px 0",
+                      borderTop: i === 0 ? "1px solid var(--border)" : "none",
+                      borderBottom: "1px solid var(--border)",
                     }}
                   >
-                    {/* Initial */}
                     <div
-                      style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: "50%",
-                        background: "var(--surface)",
-                        border: "1px solid var(--border)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: "var(--text-4)",
-                        flexShrink: 0,
-                        userSelect: "none",
-                      }}
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0"
+                      style={{ background: "var(--surface-2)", border: "1px solid var(--border-2)", color: "var(--text-4)" }}
                     >
                       {p.name.charAt(0).toUpperCase()}
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p
-                        style={{
-                          color: "var(--text-3)",
-                          fontSize: 14,
-                          fontWeight: 500,
-                          margin: 0,
-                        }}
-                      >
-                        {p.name}
-                      </p>
-                      {p.role && (
-                        <p
-                          style={{
-                            color: "var(--text-4)",
-                            fontSize: 13,
-                            margin: "2px 0 0",
-                          }}
-                        >
-                          {p.role}
-                        </p>
-                      )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium" style={{ color: "var(--text-2)" }}>{p.name}</p>
+                      {p.role && <p className="text-xs" style={{ color: "var(--text-4)", marginTop: 1 }}>{p.role}</p>}
                     </div>
-                    {p.certainty === "inferred" && (
-                      <InferredBadge certainty={p.certainty} />
-                    )}
+                    {p.certainty === "inferred" && <InferredBadge certainty={p.certainty} />}
                   </div>
                 ))}
-              </section>
-            )}
+              </div>
+            </section>
+          )}
 
-            {/* Problems */}
-            {has.problems && (
-              <section>
-                <SubLabel>Problems</SubLabel>
-                {analysis.problems.map((problem, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      borderTop: i === 0 ? "1px solid var(--border-subtle)" : "none",
-                      borderBottom: "1px solid var(--border-subtle)",
-                      padding: "14px 0",
-                    }}
-                  >
-                    <p
-                      style={{
-                        color: "var(--text-3)",
-                        fontSize: 14,
-                        lineHeight: 1.75,
-                        margin: 0,
-                      }}
-                    >
-                      {problem.description}
-                    </p>
-                    {problem.certainty === "inferred" && (
-                      <div style={{ marginTop: 8 }}>
-                        <InferredBadge certainty={problem.certainty} />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Open questions */}
-            {has.openQuestions && (
-              <section>
-                <SubLabel>Open questions</SubLabel>
-                {analysis.open_questions.map((q, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: "flex",
-                      gap: 12,
-                      alignItems: "flex-start",
-                      borderTop: i === 0 ? "1px solid var(--border-subtle)" : "none",
-                      borderBottom: "1px solid var(--border-subtle)",
-                      padding: "14px 0",
-                    }}
-                  >
-                    <span
-                      style={{
-                        color: "var(--text-4)",
-                        fontSize: 14,
-                        flexShrink: 0,
-                        lineHeight: 1.75,
-                      }}
-                    >
-                      ?
-                    </span>
-                    <p
-                      style={{
-                        color: "var(--text-3)",
-                        fontSize: 14,
-                        lineHeight: 1.75,
-                        margin: 0,
-                      }}
-                    >
-                      {q.question}
-                    </p>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {/* Timeline */}
-            {has.timeline && (
-              <section>
-                <SubLabel>Timeline</SubLabel>
-                <div style={{ borderTop: "1px solid var(--border-subtle)" }}>
-                  {analysis.timeline.map((event, i) => (
-                    <div key={i} className="timeline-row">
-                      <p
-                        style={{
-                          color: "var(--text-4)",
-                          fontSize: 13,
-                          fontWeight: 500,
-                          lineHeight: 1.6,
-                          margin: 0,
-                        }}
-                      >
-                        {event.date_or_reference}
-                      </p>
-                      <p
-                        style={{
-                          color: "var(--text-3)",
-                          fontSize: 14,
-                          lineHeight: 1.7,
-                          margin: 0,
-                        }}
-                      >
-                        {event.event}
-                      </p>
-                    </div>
-                  ))}
+          {/* Problems */}
+          {has.problems && (
+            <section>
+              <SectionLabel>Problems &amp; blockers</SectionLabel>
+              {analysis.problems.map((problem, i) => (
+                <div key={i}
+                  className="py-3"
+                  style={{ borderTop: i === 0 ? "1px solid var(--border)" : "none", borderBottom: "1px solid var(--border)" }}
+                >
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-3)" }}>{problem.description}</p>
+                  {problem.certainty === "inferred" && <div className="mt-2"><InferredBadge certainty={problem.certainty} /></div>}
                 </div>
-              </section>
-            )}
+              ))}
+            </section>
+          )}
 
-          </div>
-        </div>
+          {/* Open questions */}
+          {has.openQuestions && (
+            <section>
+              <SectionLabel>Open questions</SectionLabel>
+              {analysis.open_questions.map((q, i) => (
+                <div key={i}
+                  className="flex gap-3 items-start py-3"
+                  style={{ borderTop: i === 0 ? "1px solid var(--border)" : "none", borderBottom: "1px solid var(--border)" }}
+                >
+                  <span className="text-sm flex-shrink-0" style={{ color: "var(--text-5)", paddingTop: 1 }}>?</span>
+                  <p className="text-sm leading-relaxed" style={{ color: "var(--text-3)" }}>{q.question}</p>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {/* Timeline */}
+          {has.timeline && (
+            <section>
+              <SectionLabel>Timeline</SectionLabel>
+              <div style={{ borderTop: "1px solid var(--border)" }}>
+                {analysis.timeline.map((event, i) => (
+                  <div key={i} className="timeline-row">
+                    <p className="text-xs font-medium" style={{ color: "var(--text-4)", lineHeight: 1.6 }}>
+                      {event.date_or_reference}
+                    </p>
+                    <p className="text-sm" style={{ color: "var(--text-2)", lineHeight: 1.7 }}>
+                      {event.event}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+        </motion.div>
       )}
 
-      {/* ── Transcript ────────────────────────────────────── */}
+      {/* ── Transcript ──── */}
       {has.transcript && (
-        <div className="anim-rise-in" style={{ animationDelay: "480ms" }}>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <TranscriptSection transcript={transcript} />
-        </div>
+        </motion.div>
       )}
-
     </div>
   )
 }
