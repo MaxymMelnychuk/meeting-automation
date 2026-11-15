@@ -1,0 +1,14 @@
+[
+  {
+    "description": "Prepare the final homepage content",
+    "assignee": "Sarah",
+    "deadline": "September 10",
+    "status": "ready"
+  },
+  {
+    "description": "Handle the production deployment",
+    "assignee": "Thomas",
+    "deadline": null,
+    "status": "ready"
+  }
+]
