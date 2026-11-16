@@ -1,13 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import type { ReactNode } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronDown, CheckSquare, Lightbulb, Scale, ListChecks, Users, AlertTriangle, HelpCircle, Clock, FileText } from "lucide-react"
+import { ChevronDown, Lightbulb, Scale, ListChecks, FileText } from "lucide-react"
 import type { Action, UploadMeetingResponse } from "@/types/meeting"
 
 /* ─── Internal primitives ─────────────────────────────── */
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <p className="label" style={{ color: "var(--text-4)", marginBottom: 16 }}>
       {children}
@@ -87,11 +88,11 @@ function ActionCard({ action, index }: { action: Action; index: number }) {
 /* ─── Section ─────────────────────────────────────────── */
 
 interface SectionProps {
-  icon: React.ReactNode
+  icon: ReactNode
   label: string
   count?: number
   delay?: number
-  children: React.ReactNode
+  children: ReactNode
 }
 
 function Section({ icon, label, count, delay = 0, children }: SectionProps) {

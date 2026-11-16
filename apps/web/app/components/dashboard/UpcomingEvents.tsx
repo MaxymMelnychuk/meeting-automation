@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Plus, CalendarDays, CheckCircle2, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useApp } from "../../providers/AppProvider"
 import type { CalendarEvent } from "@/lib/types"
 
@@ -114,7 +115,8 @@ function EventRow({ event, onComplete, onDelete }: EventRowProps) {
 }
 
 export function UpcomingEvents() {
-  const { upcomingEvents, addEvent, updateEvent, removeEvent, setView } = useApp()
+  const router = useRouter()
+  const { upcomingEvents, addEvent, updateEvent, removeEvent } = useApp()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({
     title: "",
@@ -148,7 +150,7 @@ export function UpcomingEvents() {
         <span className="label">Upcoming</span>
         <div className="flex items-center gap-2">
           {extra > 0 && (
-            <button onClick={() => setView("calendar")} style={{ fontSize: 11, color: "var(--text-4)" }}>
+            <button onClick={() => router.push("/workspace/schedule")} style={{ fontSize: 11, color: "var(--text-4)" }}>
               +{extra} more
             </button>
           )}
@@ -239,7 +241,7 @@ export function UpcomingEvents() {
       {/* Calendar link */}
       {upcomingEvents.length > 0 && (
         <button
-          onClick={() => setView("calendar")}
+          onClick={() => router.push("/workspace/schedule")}
           className="w-full px-4 py-2.5 text-left transition-colors flex items-center gap-1.5"
           style={{ borderTop: "1px solid var(--border)", fontSize: 11, color: "var(--text-4)" }}
         >

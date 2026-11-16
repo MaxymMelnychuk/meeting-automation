@@ -1,7 +1,7 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { ArrowRight, Clock, FileAudio, Users, CheckSquare, AlertTriangle } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useApp } from "../../providers/AppProvider"
 import { ConfidenceBadge } from "../meeting/ConfidenceBadge"
 
@@ -16,7 +16,8 @@ function formatRelative(isoStr: string): string {
 }
 
 export function RecentMeetingCard() {
-  const { meetings, openMeeting, tasks, setView } = useApp()
+  const router = useRouter()
+  const { meetings, openMeeting, tasks } = useApp()
   const latest = meetings[0] ?? null
 
   if (!latest) {
@@ -178,7 +179,7 @@ export function RecentMeetingCard() {
               })}
               {analysis.actions.length > 3 && (
                 <button
-                  onClick={() => setView("tasks")}
+                  onClick={() => router.push("/workspace/tasks")}
                   className="text-left text-[11px] flex items-center gap-1 transition-colors"
                   style={{ color: "var(--text-4)" }}
                 >

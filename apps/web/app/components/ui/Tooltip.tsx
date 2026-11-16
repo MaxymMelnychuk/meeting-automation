@@ -1,5 +1,7 @@
 "use client"
 
+import type { ReactNode } from "react"
+
 export function Tooltip({
   label,
   side = "right",
@@ -7,7 +9,7 @@ export function Tooltip({
 }: {
   label: string
   side?: "right" | "bottom" | "left"
-  children: React.ReactNode
+  children: ReactNode
 }) {
   const pos =
     side === "bottom"

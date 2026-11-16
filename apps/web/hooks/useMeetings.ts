@@ -1,22 +1,19 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 import type { StoredMeeting } from "@/lib/types"
-import { storageGet, storageSet, STORAGE_KEYS } from "@/lib/storage"
+import { storageGet, storageSet, storageSubscribe, STORAGE_KEYS } from "@/lib/storage"
 import type { MeetingAnalysis } from "@/types/meeting"
 
 const MAX_MEETINGS = 20
+const EMPTY: StoredMeeting[] = []
 
-function load(): StoredMeeting[] {
-  return storageGet<StoredMeeting[]>(STORAGE_KEYS.MEETINGS, [])
+function getSnapshot(): StoredMeeting[] {
+  return storageGet<StoredMeeting[]>(STORAGE_KEYS.MEETINGS, EMPTY)
 }
 
 export function useMeetings() {
-  const [meetings, setMeetings] = useState<StoredMeeting[]>([])
-
-  useEffect(() => {
-    setMeetings(load())
-  }, [])
+  const meetings = useSyncExternalStore(storageSubscribe, getSnapshot, () => EMPTY)
 
   const addMeeting = useCallback(
     (
@@ -34,22 +31,18 @@ export function useMeetings() {
         transcript,
         taskIds,
       }
-      setMeetings((prev) => {
-        const updated = [meeting, ...prev].slice(0, MAX_MEETINGS)
-        storageSet(STORAGE_KEYS.MEETINGS, updated)
-        return updated
-      })
+      const updated = [meeting, ...getSnapshot()].slice(0, MAX_MEETINGS)
+      storageSet(STORAGE_KEYS.MEETINGS, updated)
       return meeting
     },
     []
   )
 
   const removeMeeting = useCallback((id: string) => {
-    setMeetings((prev) => {
-      const updated = prev.filter((m) => m.id !== id)
-      storageSet(STORAGE_KEYS.MEETINGS, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.MEETINGS,
+      getSnapshot().filter((m) => m.id !== id)
+    )
   }, [])
 
   const getMeeting = useCallback(

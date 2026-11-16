@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useCallback, useSyncExternalStore } from "react"
 import type { Task, TaskPriority, TaskStatus } from "@/lib/types"
-import { storageGet, storageSet, STORAGE_KEYS } from "@/lib/storage"
+import { storageGet, storageSet, storageSubscribe, STORAGE_KEYS } from "@/lib/storage"
 import type { Action, MeetingAnalysis } from "@/types/meeting"
 
-function load(): Task[] {
-  return storageGet<Task[]>(STORAGE_KEYS.TASKS, [])
+const EMPTY: Task[] = []
+
+function getSnapshot(): Task[] {
+  return storageGet<Task[]>(STORAGE_KEYS.TASKS, EMPTY)
 }
 
 function newId(): string {
@@ -101,23 +103,10 @@ export function generateTasksFromMeeting(
 }
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([])
-
-  useEffect(() => {
-    setTasks(load())
-  }, [])
-
-  function persist(updated: Task[]) {
-    setTasks(updated)
-    storageSet(STORAGE_KEYS.TASKS, updated)
-  }
+  const tasks = useSyncExternalStore(storageSubscribe, getSnapshot, () => EMPTY)
 
   const addTasks = useCallback((newTasks: Task[]): string[] => {
-    setTasks((prev) => {
-      const updated = [...newTasks, ...prev]
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    storageSet(STORAGE_KEYS.TASKS, [...newTasks, ...getSnapshot()])
     return newTasks.map((t) => t.id)
   }, [])
 
@@ -125,66 +114,57 @@ export function useTasks() {
     (task: Omit<Task, "id" | "createdAt" | "updatedAt">): Task => {
       const now = new Date().toISOString()
       const full: Task = { ...task, id: newId(), createdAt: now, updatedAt: now }
-      setTasks((prev) => {
-        const updated = [full, ...prev]
-        storageSet(STORAGE_KEYS.TASKS, updated)
-        return updated
-      })
+      storageSet(STORAGE_KEYS.TASKS, [full, ...getSnapshot()])
       return full
     },
     []
   )
 
   const updateTask = useCallback((id: string, changes: Partial<Task>) => {
-    setTasks((prev) => {
-      const updated = prev.map((t) =>
+    storageSet(
+      STORAGE_KEYS.TASKS,
+      getSnapshot().map((t) =>
         t.id === id
           ? { ...t, ...changes, updatedAt: new Date().toISOString() }
           : t
       )
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    )
   }, [])
 
   const removeTask = useCallback((id: string) => {
-    setTasks((prev) => {
-      const updated = prev.filter((t) => t.id !== id)
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.TASKS,
+      getSnapshot().filter((t) => t.id !== id)
+    )
   }, [])
 
   const removeTasksByMeeting = useCallback((meetingId: string) => {
-    setTasks((prev) => {
-      const updated = prev.filter((t) => t.meetingId !== meetingId)
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.TASKS,
+      getSnapshot().filter((t) => t.meetingId !== meetingId)
+    )
   }, [])
 
   const approveTask = useCallback((id: string) => {
-    setTasks((prev) => {
-      const updated = prev.map((t) =>
+    storageSet(
+      STORAGE_KEYS.TASKS,
+      getSnapshot().map((t) =>
         t.id === id
           ? { ...t, status: "approved" as TaskStatus, updatedAt: new Date().toISOString() }
           : t
       )
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    )
   }, [])
 
   const dismissTask = useCallback((id: string) => {
-    setTasks((prev) => {
-      const updated = prev.map((t) =>
+    storageSet(
+      STORAGE_KEYS.TASKS,
+      getSnapshot().map((t) =>
         t.id === id
           ? { ...t, status: "dismissed" as TaskStatus, updatedAt: new Date().toISOString() }
           : t
       )
-      storageSet(STORAGE_KEYS.TASKS, updated)
-      return updated
-    })
+    )
   }, [])
 
   return {

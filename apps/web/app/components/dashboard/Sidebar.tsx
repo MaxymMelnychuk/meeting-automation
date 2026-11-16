@@ -1,18 +1,23 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { motion } from "framer-motion"
 import { FileAudio, CheckSquare, ArrowLeft } from "lucide-react"
-import { useApp, type AppView } from "../../providers/AppProvider"
+import { useRouter, usePathname } from "next/navigation"
+import { useApp } from "../../providers/AppProvider"
 
-type NavItem = { id: AppView; label: string; icon: React.ReactNode }
+type NavId = "meetings" | "tasks"
+type NavItem = { id: NavId; label: string; icon: ReactNode; href: string }
 
 const NAV: NavItem[] = [
-  { id: "meetings", label: "Meetings", icon: <FileAudio size={14} /> },
-  { id: "tasks",    label: "Tasks",    icon: <CheckSquare size={14} /> },
+  { id: "meetings", label: "Meetings", icon: <FileAudio size={14} />, href: "/workspace/meetings" },
+  { id: "tasks",    label: "Tasks",    icon: <CheckSquare size={14} />, href: "/workspace/tasks" },
 ]
 
 export function Sidebar({ onGoHome }: { onGoHome: () => void }) {
-  const { view, setView, tasks } = useApp()
+  const router = useRouter()
+  const pathname = usePathname()
+  const { tasks } = useApp()
   const pendingCount = tasks.filter(t => t.status === "pending" && t.isAISuggested).length
 
   return (
@@ -39,12 +44,12 @@ export function Sidebar({ onGoHome }: { onGoHome: () => void }) {
 
       {/* Nav */}
       <nav className="flex-1 flex flex-col gap-px p-2 overflow-y-auto">
-        {NAV.map(({ id, label, icon }) => {
-          const active = view === id
+        {NAV.map(({ id, label, icon, href }) => {
+          const active = pathname === href || pathname.startsWith(href + "/")
           return (
             <button
               key={id}
-              onClick={() => setView(id)}
+              onClick={() => router.push(href)}
               title={label}
               className="relative w-full flex items-center gap-2 px-3 py-2 rounded text-xs text-left cursor-pointer transition-colors"
               style={{

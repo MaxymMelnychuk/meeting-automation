@@ -1,11 +1,13 @@
 "use client"
 
-import { useState, useCallback, useMemo, useEffect } from "react"
+import { useCallback, useMemo, useSyncExternalStore } from "react"
 import type { CalendarEvent } from "@/lib/types"
-import { storageGet, storageSet, STORAGE_KEYS } from "@/lib/storage"
+import { storageGet, storageSet, storageSubscribe, STORAGE_KEYS } from "@/lib/storage"
 
-function load(): CalendarEvent[] {
-  return storageGet<CalendarEvent[]>(STORAGE_KEYS.CALENDAR, [])
+const EMPTY: CalendarEvent[] = []
+
+function getSnapshot(): CalendarEvent[] {
+  return storageGet<CalendarEvent[]>(STORAGE_KEYS.CALENDAR, EMPTY)
 }
 
 function newId(): string {
@@ -20,11 +22,7 @@ function sortEvents(events: CalendarEvent[]): CalendarEvent[] {
 }
 
 export function useCalendar() {
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-
-  useEffect(() => {
-    setEvents(sortEvents(load()))
-  }, [])
+  const events = useSyncExternalStore(storageSubscribe, getSnapshot, () => EMPTY)
 
   const addEvent = useCallback(
     (data: Omit<CalendarEvent, "id" | "createdAt">): CalendarEvent => {
@@ -33,40 +31,31 @@ export function useCalendar() {
         id: newId(),
         createdAt: new Date().toISOString(),
       }
-      setEvents((prev) => {
-        const updated = sortEvents([event, ...prev])
-        storageSet(STORAGE_KEYS.CALENDAR, updated)
-        return updated
-      })
+      storageSet(STORAGE_KEYS.CALENDAR, sortEvents([event, ...getSnapshot()]))
       return event
     },
     []
   )
 
   const updateEvent = useCallback((id: string, changes: Partial<CalendarEvent>) => {
-    setEvents((prev) => {
-      const updated = sortEvents(
-        prev.map((e) => (e.id === id ? { ...e, ...changes } : e))
-      )
-      storageSet(STORAGE_KEYS.CALENDAR, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.CALENDAR,
+      sortEvents(getSnapshot().map((e) => (e.id === id ? { ...e, ...changes } : e)))
+    )
   }, [])
 
   const removeEvent = useCallback((id: string) => {
-    setEvents((prev) => {
-      const updated = prev.filter((e) => e.id !== id)
-      storageSet(STORAGE_KEYS.CALENDAR, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.CALENDAR,
+      getSnapshot().filter((e) => e.id !== id)
+    )
   }, [])
 
   const removeEventsByMeeting = useCallback((meetingId: string) => {
-    setEvents((prev) => {
-      const updated = prev.filter((e) => e.meetingId !== meetingId)
-      storageSet(STORAGE_KEYS.CALENDAR, updated)
-      return updated
-    })
+    storageSet(
+      STORAGE_KEYS.CALENDAR,
+      getSnapshot().filter((e) => e.meetingId !== meetingId)
+    )
   }, [])
 
   const today = new Date().toISOString().split("T")[0]

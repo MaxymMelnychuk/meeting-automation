@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Home, FileAudio, CheckSquare, CalendarDays } from "lucide-react"
@@ -19,7 +20,7 @@ function isActive(pathname: string, href: string, end?: boolean) {
   return pathname === href || pathname.startsWith(href + "/")
 }
 
-export function WorkspaceShell({ children }: { children: React.ReactNode }) {
+export function WorkspaceShell({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const { tasks } = useApp()
   const pending = tasks.filter((t) => t.status === "pending" && t.isAISuggested).length

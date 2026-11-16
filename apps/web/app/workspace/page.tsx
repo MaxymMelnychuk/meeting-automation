@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import Link from "next/link"
 import { FileAudio, ArrowRight } from "lucide-react"
 import { useApp } from "../providers/AppProvider"
@@ -17,6 +17,14 @@ function relative(iso: string) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
+function subscribeNoop() {
+  return () => {}
+}
+
+function clientToday() {
+  return new Date().toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric" })
+}
+
 function formatWhen(dateStr: string, time: string) {
   const today = new Date().toISOString().split("T")[0]
   const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split("T")[0]
@@ -29,12 +37,8 @@ export default function WorkspaceOverview() {
   const latest = meetings[0] ?? null
   const suggested = tasks.filter((t) => t.status === "pending" && t.isAISuggested).slice(0, 4)
   const next = upcomingEvents.slice(0, 4)
-  const [today, setToday] = useState("")
+  const today = useSyncExternalStore(subscribeNoop, clientToday, () => "")
   const activeCount = tasks.filter((t) => t.status === "approved" || t.status === "in_progress").length
-
-  useEffect(() => {
-    setToday(new Date().toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric" }))
-  }, [])
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-12">
