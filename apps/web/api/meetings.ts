@@ -6,7 +6,7 @@ export async function uploadMeeting(
   const formData = new FormData()
   formData.append("file", file)
 
-  const response = await fetch("http://localhost:8000/meetings/upload", {
+  const response = await fetch("/api/meetings/upload", {
     method: "POST",
     body: formData,
   })
