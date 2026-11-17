@@ -4,7 +4,13 @@
   "services": {
     "api": {
       "root": "apps/api",
-      "framework": "fastapi"
+      "framework": "fastapi",
+      "rewrites": [
+        {
+          "source": "/api/:path(.*)?",
+          "destination": "/:path"
+        }
+      ]
     },
     "web": {
       "root": "apps/web",
