@@ -1,3 +1,7 @@
+
+import os
+import tempfile
+
 from fastapi import APIRouter, UploadFile, File
 
 from services.transcription import transcribe_audio
@@ -10,18 +14,27 @@ router = APIRouter()
 
 @router.post("/meetings/upload")
 async def upload_meeting(file: UploadFile = File(...)):
-    file_path = f"temp_{file.filename}"
+    suffix = os.path.splitext(file.filename or "")[1] or ".mp3"
 
-    with open(file_path, "wb") as buffer:
+    with tempfile.NamedTemporaryFile(
+        suffix=suffix,
+        dir="/tmp",
+        delete=False
+    ) as buffer:
+        file_path = buffer.name
         buffer.write(await file.read())
 
-    text = transcribe_audio(file_path)
-    analysis = analyze_meeting(text)
-    actions = prepare_actions(analysis)
+    try:
+        text = transcribe_audio(file_path)
+        analysis = analyze_meeting(text)
+        actions = prepare_actions(analysis)
 
-    return {
-        "filename": file.filename,
-        "transcript": text,
-        "analysis": analysis.model_dump(),
-        "actions": actions,
-    }
+        return {
+            "filename": file.filename,
+            "transcript": text,
+            "analysis": analysis.model_dump(),
+            "actions": actions,
+        }
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
