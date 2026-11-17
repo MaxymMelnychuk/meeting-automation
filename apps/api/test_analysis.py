@@ -1,5 +1,5 @@
-from apps.api.services.analysis import analyze_meeting
-from apps.api.services.automation import prepare_actions, execute_actions
+from services.analysis import analyze_meeting
+from services.automation import prepare_actions, execute_actions
 
 
 with open("apps/api/test_meeting.txt", "r", encoding="utf-8") as file:

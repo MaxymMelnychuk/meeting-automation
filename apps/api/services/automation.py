@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from apps.api.schemas.meeting import MeetingAnalysis
+from schemas.meeting import MeetingAnalysis
 
 
 def prepare_actions(analysis: MeetingAnalysis):

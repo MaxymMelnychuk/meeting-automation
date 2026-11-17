@@ -1,8 +1,8 @@
 from fastapi import APIRouter, UploadFile, File
 
-from apps.api.services.transcription import transcribe_audio
-from apps.api.services.analysis import analyze_meeting
-from apps.api.services.automation import prepare_actions
+from services.transcription import transcribe_audio
+from services.analysis import analyze_meeting
+from services.automation import prepare_actions
 
 
 router = APIRouter()

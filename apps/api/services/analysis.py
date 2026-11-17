@@ -5,7 +5,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from groq import Groq
 
-from apps.api.schemas.meeting import MeetingAnalysis
+from schemas.meeting import MeetingAnalysis
 
 
 load_dotenv("apps/api/.env")
