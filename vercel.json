@@ -16,14 +16,7 @@
       "source": "/api/(.*)",
       "destination": {
         "service": "api"
-      },
-      "transforms": [
-        {
-          "type": "rewrite",
-          "src": "^/api/(.*)$",
-          "dest": "/$1"
-        }
-      ]
+      }
     },
     {
       "source": "/(.*)",
