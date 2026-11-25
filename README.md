@@ -2,6 +2,9 @@
 
 AI Meeting Automation is an application designed to transform meeting content into useful information and concrete actions.
 
+<img width="1712" height="919" alt="project-automeet" src="https://github.com/user-attachments/assets/f4e15c97-d395-42cd-89e5-a2e7b0f39d1b" />
+
+
 The idea is simple: meetings contain a huge amount of important information, but a large part of it can be forgotten, poorly documented, or require manual work after the meeting.
 
 The application uses artificial intelligence to understand the meeting as a whole, identify what matters, and help transform the discussion into work that can actually be acted upon.
